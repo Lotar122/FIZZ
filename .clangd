@@ -1,0 +1,5 @@
+CompileFlags:
+  Add: [-Isrc, -Isrc/CMSISHeaders, -std=c++20]
+
+Index:
+  Background: Yes
