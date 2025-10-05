@@ -7,43 +7,11 @@ extern "C" {
 #include "Functions/ReadPin/readPin.h"
 #include "Functions/SetPin/setPin.h"
 #include "Heap/Heap.h"
-
-void servoSetAngle(int deg, uint8_t channel) 
-{
-    // Map 0-180° to 1000-2000us
-    int pulse = 500 + (deg * 2000) / 180;
-    
-	switch(channel)
-	{
-		case 1:
-			TIM3->CCR1 = pulse;
-			break;
-		case 2:
-			TIM3->CCR2 = pulse;
-			break;
-		case 3:
-			TIM3->CCR3 = pulse;
-			break;
-		case 4:
-			TIM3->CCR4 = pulse;
-			break;
-	}
-}
+#include "Functions/SetServoAngle/setServoAngle.h"
 
 }
 
 #include "Functions/InitializeTimerForServos/initializeTimerForServos.hpp"
-
-template<typename T>
-class SizedArray
-{
-public:
-	T* data;
-	size_t size;
-
-	void destroy() { free(data); };
-	SizedArray(void* data, size_t size) : data(data), size(size) {};
-};
 
 int main()
 {
@@ -87,8 +55,8 @@ int main()
 		else currentValue = 1;
 		setPin(GPIOA, 5, currentValue);
 
-		servoSetAngle(0, 1);
-		servoSetAngle(45, 2);
+		servoSetAngle(0, TIM3, 1);
+		servoSetAngle(45, TIM3, 2);
 		delay(1000);
 		
 		currentValue = readPin(GPIOA, 5);
@@ -96,8 +64,8 @@ int main()
 		else currentValue = 1;
 		setPin(GPIOA, 5, currentValue);
 
-		servoSetAngle(180, 1);
-		servoSetAngle(135, 2);
+		servoSetAngle(180, TIM3, 1);
+		servoSetAngle(135, TIM3, 2);
 		delay(1000);
 	}
 }
