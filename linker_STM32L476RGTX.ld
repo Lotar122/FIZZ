@@ -212,16 +212,6 @@ SECTIONS
 	. = . + _Min_Stack_Size;
 	. = ALIGN(8);
 	} >RAM
-	
-	
-	/* Remove information from the compiler libraries */
-	/DISCARD/ :
-	{
-	libc.a ( * )
-	libm.a ( * )
-	libgcc.a ( * )
-	}
-	
-	
+  	
 	.ARM.attributes 0 : { *(.ARM.attributes) }
 }

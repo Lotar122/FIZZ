@@ -1,0 +1,11 @@
+*startfile:
+
+*endfile:
+
+*lib:
+
+*link:
+
+*libgcc:
+-lgcc
+
