@@ -39,13 +39,6 @@
 
 
 /*
- * LLVM/Clang Compiler
- */
-#elif defined ( __clang__ )
-  #include "cmsis_clang.h"
-
-
-/*
  * GNU Compiler
  */
 #elif defined ( __GNUC__ )
@@ -276,7 +269,7 @@
   #endif
 
 #else
-  #error Unknown compiler.
+  // #error Unknown compiler.
 #endif
 
 
