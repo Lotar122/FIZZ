@@ -31,59 +31,65 @@ defined in linker script */
   .weak Reset_Handler
   .type Reset_Handler, %function
 Reset_Handler:
-  ldr   r0, =_estack
-  mov   sp, r0          /* set stack pointer */
-/* Call the clock system initialization function.*/
-  bl  SystemInit
+    /* 1. Set stack pointer */
+    ldr   r0, =_estack
+    mov   sp, r0
 
-/* Copy the data segment initializers from flash to SRAM */
-  ldr r0, =_sdata
-  ldr r1, =_edata
-  ldr r2, =_sidata
-  movs r3, #0
-  b LoopCopyDataInit
+    /* 2. Call system init (clocks, etc.) */
+    bl SystemInit
 
-CopyDataInit:
-  ldr r4, [r2, r3]
-  str r4, [r0, r3]
-  adds r3, r3, #4
+    /* 3. Copy .data section from flash to RAM */
+    ldr r0, =_sdata      /* RAM start */
+    ldr r1, =_edata      /* RAM end */
+    ldr r2, =_sidata     /* Flash source */
+1:  cmp r0, r1
+    bge 2f
+    ldr r3, [r2], #4
+    str r3, [r0], #4
+    add r0, r0, #4
+    b 1b
+2:
 
-LoopCopyDataInit:
-  adds r4, r0, r3
-  cmp r4, r1
-  bcc CopyDataInit
+    /* 4. Zero .bss section */
+    ldr r0, =_sbss
+    ldr r1, =_ebss
+    movs r2, #0
+3:  cmp r0, r1
+    bge 4f
+    str r2, [r0], #4
+    add r0, r0, #4
+    b 3b
+4:
 
-/* Zero fill the bss segment. */
-  ldr r2, =_sbss
-  ldr r4, =_ebss
-  movs r3, #0
-  b LoopFillZerobss
+    /* 5. Call C++ constructors */
+    bl call_init_array
 
-FillZerobss:
-  str  r3, [r2]
-  adds r2, r2, #4
+    /* 6. Call main() */
+    bl main
 
-LoopFillZerobss:
-  cmp r2, r4
-  bcc FillZerobss
+    /* 7. If main returns, loop forever */
+Forever:
+    b Forever
 
-/* Call the application's entry point.*/
-  bl  call_init_array
-  bl main
+.size Reset_Handler, .-Reset_Handler
 
+/*--------------------------------------------------------------------
+  Call C++ global constructors
+--------------------------------------------------------------------*/
 .thumb_func
 call_init_array:
-    ldr   r0, =__init_array_start__
-    ldr   r1, =__init_array_end__
+    ldr r0, =__init_array_start__
+    ldr r1, =__init_array_end__
 
-1:  cmp   r0, r1
-    bcc   2f
-    bx    lr
-
-2:  ldr   r2, [r0], #4
-    blx   r2
-    b     1b
-
+loop_init:
+    cmp r0, r1
+    bge done_init
+    ldr r2, [r0], #4
+    blx r2
+    b loop_init
+done_init:
+    bx lr
+	
 LoopForever:
   b LoopForever
 
